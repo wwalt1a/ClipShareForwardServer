@@ -1,7 +1,7 @@
 version: "3"
 services:
   clipshare-forward-server:
-    image: coclyun/clipshare-forward-server:1.1
+    image: coclyun/clipshare-forward-server:latest
     container_name: clipshare-forward-server
     restart: always
     ports:
@@ -10,4 +10,4 @@ services:
     environment:
       - TZ=Asia/Shanghai
     volumes:
-      - ./data:/data
+      - ./data:/app/data
