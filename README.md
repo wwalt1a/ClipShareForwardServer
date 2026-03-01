@@ -1,4 +1,4 @@
-该项目是 [ClipShare](https://github.com/aa2013/ClipShare) 的中转程序的后台管理页面。
+该项目是 [ClipShare](https://github.com/aa2013/ClipShare) 的中转程序。
 
 该管理页面主要提供以下功能：
 
