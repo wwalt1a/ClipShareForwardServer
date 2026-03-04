@@ -7,6 +7,7 @@ import (
 	"gopkg.in/yaml.v3"
 	_ "gopkg.in/yaml.v3"
 	"os"
+	"strconv"
 	"time"
 )
 
@@ -50,10 +51,16 @@ func ReadConfig() Config {
 	}
 	var config Config
 	err = viper.Unmarshal(&config)
-	config.CheckValues()
 	if err != nil {
 		panic(err)
 	}
+	// 环境变量覆盖：WEB_PORT 可覆盖 config.yaml 中的 web.port
+	if portStr := os.Getenv("WEB_PORT"); portStr != "" {
+		if port, err := strconv.Atoi(portStr); err == nil {
+			config.Web.Port = &port
+		}
+	}
+	config.CheckValues()
 	return config
 }
 func WatchConfig(onConfigChanged OnConfigChanged) {
