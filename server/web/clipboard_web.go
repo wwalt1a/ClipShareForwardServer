@@ -42,7 +42,8 @@ func pushClipText(c *gin.Context) {
 		CreatedAt: time.Now(),
 	}
 	if err := db.AddClipboardItem(item); err != nil {
-		panic(err)
+		errorResult(c, http.StatusInternalServerError, err.Error(), nil)
+		return
 	}
 	successResult(c, gin.H{"id": item.Id})
 }
@@ -66,16 +67,19 @@ func pushClipImage(c *gin.Context) {
 	fileId := uuid.NewString()
 	src, err := file.Open()
 	if err != nil {
-		panic(err)
+		errorResult(c, http.StatusInternalServerError, err.Error(), nil)
+		return
 	}
 	defer src.Close()
 
 	buf := make([]byte, file.Size)
 	if _, err = src.Read(buf); err != nil {
-		panic(err)
+		errorResult(c, http.StatusInternalServerError, err.Error(), nil)
+		return
 	}
 	if err = storage.SaveImage(fileId, buf); err != nil {
-		panic(err)
+		errorResult(c, http.StatusInternalServerError, err.Error(), nil)
+		return
 	}
 
 	expireAt := time.Now().AddDate(0, 0, imageTTLDays)
@@ -91,7 +95,8 @@ func pushClipImage(c *gin.Context) {
 	if err = db.AddClipboardItem(item); err != nil {
 		// 回滚文件
 		_ = storage.DeleteImage(fileId)
-		panic(err)
+		errorResult(c, http.StatusInternalServerError, err.Error(), nil)
+		return
 	}
 	successResult(c, gin.H{"id": item.Id, "fileId": fileId, "expireAt": expireAt.Unix()})
 }
@@ -113,7 +118,8 @@ func pullClipItems(c *gin.Context) {
 	}
 	items, err := db.GetClipboardItemsSince(groupId, since)
 	if err != nil {
-		panic(err)
+		errorResult(c, http.StatusInternalServerError, err.Error(), nil)
+		return
 	}
 	successResult(c, items)
 }
@@ -128,7 +134,8 @@ func deleteClipItems(c *gin.Context) {
 	// 先查图片条目，删文件
 	items, err := db.GetClipboardItemsSince(dto.GroupId, time.Time{})
 	if err != nil {
-		panic(err)
+		errorResult(c, http.StatusInternalServerError, err.Error(), nil)
+		return
 	}
 	idSet := make(map[string]bool, len(dto.Ids))
 	for _, id := range dto.Ids {
@@ -140,7 +147,8 @@ func deleteClipItems(c *gin.Context) {
 		}
 	}
 	if err = db.DeleteClipboardItems(dto.GroupId, dto.Ids); err != nil {
-		panic(err)
+		errorResult(c, http.StatusInternalServerError, err.Error(), nil)
+		return
 	}
 	successResult(c, true)
 }
