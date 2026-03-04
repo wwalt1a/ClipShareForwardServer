@@ -54,6 +54,15 @@ func StartWebServer() {
 	authorized.POST("/planKeys/list", getPlanKeys)
 	authorized.POST("/planKeys/updateStatus", updatePlanKeyStatus)
 	authorized.GET("/planKeys/verify", verifyKey)
+
+	// 剪贴板云存储 API（无需管理员认证，用 groupId 作为命名空间）
+	clip := api.Group("/clip")
+	clip.POST("/push/text", pushClipText)
+	clip.POST("/push/image", pushClipImage)
+	clip.GET("/pull", pullClipItems)
+	clip.DELETE("/delete", deleteClipItems)
+	clip.GET("/image", getClipImage)
+
 	// Start web forwardServer
 	_ = r.Run(fmt.Sprintf(":%d", *types.AppConfig.Web.Port))
 }

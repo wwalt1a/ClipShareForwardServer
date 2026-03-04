@@ -31,6 +31,11 @@ func ConnectDB(dbPath string) {
 		panic("failed to migrate database" + err.Error())
 		return
 	}
+	err = db.AutoMigrate(&ClipboardItem{})
+	if err != nil {
+		panic("failed to migrate database" + err.Error())
+		return
+	}
 }
 func CloseDB() {
 	if AppDb == nil {

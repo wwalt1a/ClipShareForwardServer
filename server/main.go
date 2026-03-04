@@ -28,6 +28,7 @@ func main() {
 	types.AppConfig = types.ReadConfig()
 	types.WatchConfig(onConfigChanged)
 	go forward.StartForwardServer()
+	web.StartImageCleanup()
 	web.StartWebServer()
 }
 
