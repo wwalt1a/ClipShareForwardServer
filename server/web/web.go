@@ -69,6 +69,7 @@ func StartWebServer() {
 	sync.POST("/push", syncPush)
 	sync.GET("/pull", syncPull)
 	sync.POST("/device-state", updateDeviceState)
+	utils.LogUtil.Info("StartWebServer", "已注册同步API路由: /api/sync/init, /api/sync/push, /api/sync/pull, /api/sync/device-state")
 
 	// Start web forwardServer
 	_ = r.Run(fmt.Sprintf(":%d", *types.AppConfig.Web.Port))

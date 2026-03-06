@@ -163,11 +163,14 @@ func syncInit(c *gin.Context) {
 
 // syncPush 推送操作日志
 func syncPush(c *gin.Context) {
+	utils.LogUtil.Info("syncPush", "收到推送请求")
 	var dto SyncPushDto
 	if err := c.ShouldBindJSON(&dto); err != nil {
+		utils.LogUtil.Error("syncPush", "JSON解析失败:", err)
 		errorResult(c, http.StatusBadRequest, err.Error(), nil)
 		return
 	}
+	utils.LogUtil.Info("syncPush", "GroupId:", dto.GroupId, "DevId:", dto.DevId, "操作数:", len(dto.Operations))
 
 	// 获取操作日志TTL配置
 	ttlDaysStr, _ := db.GetServerConfig("operation_log_ttl_days", "7")
