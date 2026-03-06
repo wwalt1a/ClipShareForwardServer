@@ -2,6 +2,8 @@ package db
 
 import (
 	"time"
+
+	"gorm.io/gorm/clause"
 )
 
 // ClipboardItem 服务器存储的剪贴板条目
@@ -60,7 +62,9 @@ type ServerConfig struct {
 
 func AddClipboardItem(item ClipboardItem) error {
 	checkDb()
-	return AppDb.Create(&item).Error
+	// Use ON CONFLICT DO NOTHING to gracefully handle duplicate inserts
+	// (e.g. when the same item is pushed via both /api/clip/push and /api/sync/push)
+	return AppDb.Clauses(clause.OnConflict{DoNothing: true}).Create(&item).Error
 }
 
 func GetClipboardItemsSince(groupId string, since time.Time) ([]ClipboardItem, error) {
@@ -122,7 +126,7 @@ func AddOperationLogs(logs []OperationLog) error {
 func GetOperationLogsSince(groupId string, since time.Time) ([]OperationLog, error) {
 	checkDb()
 	var logs []OperationLog
-	err := AppDb.Where("group_id = ? AND created_at > ?", groupId, since).
+	err := AppDb.Where("group_id = ? AND created_at >= ?", groupId, since).
 		Order("created_at ASC").
 		Find(&logs).Error
 	return logs, err
