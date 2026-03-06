@@ -43,6 +43,7 @@ type ConfigDto struct {
 	FileTransferRateLimit *int              `json:"fileTransferRateLimit"`
 	Log                   *LogConfig        `json:"log"`
 	PublicMode            *bool             `json:"publicMode"`
+	OperationLogTTLDays   *int              `json:"operationLogTTLDays"`
 }
 
 // ConnectionCnt 连接数记录

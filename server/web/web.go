@@ -191,6 +191,15 @@ func updateConfig(c *gin.Context) {
 			updateLogBuffer = true
 		}
 	}
+	if newCfg.OperationLogTTLDays != nil {
+		if *newCfg.OperationLogTTLDays < 1 {
+			panic("operationLogTTLDays must be >= 1")
+		}
+		err := db.SetServerConfig("operation_log_ttl_days", fmt.Sprintf("%d", *newCfg.OperationLogTTLDays))
+		if err != nil {
+			panic(fmt.Sprintf("Failed to save operation_log_ttl_days: %v", err))
+		}
+	}
 	err := types.AppConfig.Save("./data/config.yaml")
 	if err != nil {
 		panic(fmt.Sprintf("Save to memory successful, but error message failed to save to file: %v, ", err))

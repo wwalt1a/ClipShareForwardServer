@@ -1,6 +1,7 @@
 package types
 
 import (
+	"clipshare/db"
 	"clipshare/utils"
 	"github.com/fsnotify/fsnotify"
 	"github.com/spf13/viper"
@@ -130,6 +131,10 @@ func (config *Config) Save(path string) error {
 }
 
 func (config *Config) ToDto() ConfigDto {
+	// 读取操作日志TTL配置
+	ttlDaysStr, _ := db.GetServerConfig("operation_log_ttl_days", "7")
+	ttlDays, _ := strconv.Atoi(ttlDaysStr)
+
 	return ConfigDto{
 		LoginExpiredSeconds:   &config.Web.LoginExpiredSeconds,
 		UnlimitedDevices:      &config.Forward.UnlimitedDevices,
@@ -137,6 +142,7 @@ func (config *Config) ToDto() ConfigDto {
 		FileTransferRateLimit: config.Forward.FileTransferLimit.Rate,
 		Log:                   config.Log,
 		PublicMode:            &config.PublicMode,
+		OperationLogTTLDays:   &ttlDays,
 	}
 }
 func (config *Config) GetUnlimitedDeviceIds() []string {
