@@ -150,7 +150,9 @@ func forcedDisconnection(c *gin.Context) {
 	}
 }
 func getConfig(c *gin.Context) {
-	successResult(c, types.AppConfig.ToDto())
+	ttlDaysStr, _ := db.GetServerConfig("operation_log_ttl_days", "7")
+	ttlDays, _ := strconv.Atoi(ttlDaysStr)
+	successResult(c, types.AppConfig.ToDto(ttlDays))
 }
 func updateConfig(c *gin.Context) {
 	var newCfg types.ConfigDto
