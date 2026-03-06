@@ -113,6 +113,7 @@ func clientListener(conn net.Conn) {
 	appVersion := msg["appVersion"]
 	targetId := msg["target"]
 	selfDevName := msg["devName"]
+	groupId := msg["groupId"]
 	if selfId == "" {
 		logs.Error("selfId not found")
 		_ = conn.Close()
@@ -124,6 +125,7 @@ func clientListener(conn net.Conn) {
 		appVersion:  appVersion,
 		targetId:    targetId,
 		selfDevName: selfDevName,
+		groupId:     groupId,
 	}
 	switch connType {
 	case check:
@@ -305,6 +307,26 @@ func StopPlanKeyConn(key string) {
 		}
 	}
 }
+
+// NotifyGroupSync 向同 groupId 的所有在线设备（排除 excludeDevId）发送 syncNotify 通知
+func NotifyGroupSync(groupId string, excludeDevId string) {
+	if groupId == "" {
+		return
+	}
+	sendData, _ := json.Marshal(map[string]string{
+		"type": "syncNotify",
+	})
+	for devId, baseConn := range BaseSocketsMap {
+		if devId == excludeDevId {
+			continue
+		}
+		if baseConn.GroupId != groupId {
+			continue
+		}
+		_ = sendPacket(baseConn.Conn, sendData)
+	}
+}
+
 func UpdateRateLimitConfig() {
 	config := types.AppConfig.Forward
 

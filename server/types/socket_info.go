@@ -24,6 +24,8 @@ type SocketInfo struct {
 	KeyFirstUseAt *time.Time
 	//only base conn
 	PlanType *PlanTypeDto
+	//only base conn: 客户端上报的 groupId，用于同组推送通知
+	GroupId string
 }
 
 func (skt *SocketInfo) UpdateSnapshot() {

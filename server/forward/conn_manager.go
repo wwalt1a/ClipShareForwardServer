@@ -23,6 +23,7 @@ type connListenerInfo struct {
 	platform    string
 	appVersion  string
 	targetId    string
+	groupId     string
 }
 
 func isUnlimitedDevice(devId string) bool {
@@ -224,6 +225,7 @@ func onBaseTypeConnected(conn net.Conn, msgInfo connListenerInfo, packetReader *
 		AccessKey:     utils.SimpleIf[*string](key == "", nil, &key),
 		KeyFirstUseAt: firstUseTime,
 		PlanType:      planType,
+		GroupId:       msgInfo.groupId,
 	}
 	//保持连接
 	for {

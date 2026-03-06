@@ -2,6 +2,7 @@ package web
 
 import (
 	"clipshare/db"
+	"clipshare/forward"
 	"clipshare/utils"
 	"net/http"
 	"strconv"
@@ -270,6 +271,9 @@ func syncPush(c *gin.Context) {
 		LastSyncAt: time.Now(),
 	}
 	_ = db.UpsertDeviceState(state)
+
+	// 通知同组其他在线设备立即拉取
+	forward.NotifyGroupSync(dto.GroupId, dto.DevId)
 
 	successResult(c, gin.H{"pushed": len(dto.Operations)})
 }
