@@ -63,6 +63,13 @@ func StartWebServer() {
 	clip.DELETE("/delete", deleteClipItems)
 	clip.GET("/image", getClipImage)
 
+	// 新的同步 API（细粒度操作日志同步）
+	sync := api.Group("/sync")
+	sync.POST("/init", syncInit)
+	sync.POST("/push", syncPush)
+	sync.GET("/pull", syncPull)
+	sync.POST("/device-state", updateDeviceState)
+
 	// Start web forwardServer
 	_ = r.Run(fmt.Sprintf(":%d", *types.AppConfig.Web.Port))
 }

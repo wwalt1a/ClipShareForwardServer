@@ -29,6 +29,7 @@ func main() {
 	types.WatchConfig(onConfigChanged)
 	go forward.StartForwardServer()
 	web.StartImageCleanup()
+	web.StartOperationLogCleanup()
 	web.StartWebServer()
 }
 
