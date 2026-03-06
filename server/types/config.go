@@ -37,7 +37,7 @@ var DefaultConfig = Config{
 type OnConfigChanged func(e fsnotify.Event)
 
 func ReadConfig() Config {
-	if !utils.FileExists("./data/config.yaml") {
+	if _, err := os.Stat("./data/config.yaml"); os.IsNotExist(err) {
 		_ = DefaultConfig.Save("./data/config.yaml")
 	}
 	viper.AddConfigPath("./data")
