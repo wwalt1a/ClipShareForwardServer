@@ -2,7 +2,6 @@ package web
 
 import (
 	"clipshare/db"
-	"clipshare/storage"
 	"net/http"
 	"strconv"
 	"time"
