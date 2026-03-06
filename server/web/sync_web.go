@@ -178,12 +178,15 @@ func syncPush(c *gin.Context) {
 	ttlDays, _ := strconv.Atoi(ttlDaysStr)
 
 	var logs []db.OperationLog
-	for _, op := range dto.Operations {
+	for i, op := range dto.Operations {
 		createdAt, err := time.Parse(time.RFC3339, op.CreatedAt)
 		if err != nil {
 			errorResult(c, http.StatusBadRequest, "invalid createdAt format", nil)
 			return
 		}
+
+		// 详细日志：输出每个操作的完整信息
+		utils.LogUtil.Info("syncPush", "操作", i+1, "type:", op.Type, "itemId:", op.ItemId, "itemType:", op.ItemType, "fileId:", op.FileId, "tagName:", op.TagName, "content长度:", len(op.Content))
 
 		expireAt := time.Now().AddDate(0, 0, ttlDays)
 		log := db.OperationLog{
@@ -204,6 +207,7 @@ func syncPush(c *gin.Context) {
 		// 根据操作类型更新 ClipboardItem 和 ClipboardTag
 		switch op.Type {
 		case "addItem":
+			utils.LogUtil.Info("syncPush", "处理addItem: itemId:", op.ItemId, "itemType:", op.ItemType, "fileId:", op.FileId, "content长度:", len(op.Content))
 			clipItem := db.ClipboardItem{
 				Id:        op.ItemId,
 				GroupId:   dto.GroupId,
@@ -218,24 +222,37 @@ func syncPush(c *gin.Context) {
 				imgExpireAt := createdAt.AddDate(0, 0, imageTTLDays)
 				clipItem.ExpireAt = &imgExpireAt
 			}
-			_ = db.AddClipboardItem(clipItem)
+			err := db.AddClipboardItem(clipItem)
+			if err != nil {
+				utils.LogUtil.Error("syncPush", "addItem失败:", err)
+			} else {
+				utils.LogUtil.Info("syncPush", "addItem成功: itemId:", op.ItemId)
+			}
 
 		case "deleteItem":
+			utils.LogUtil.Info("syncPush", "处理deleteItem: itemId:", op.ItemId)
 			// 删除关联的标签
 			_ = db.DeleteClipboardTagsByItemId(op.ItemId)
 			// 删除记录
 			_ = db.DeleteClipboardItems(dto.GroupId, []string{op.ItemId})
 
 		case "addTag":
+			utils.LogUtil.Info("syncPush", "处理addTag: itemId:", op.ItemId, "tagName:", op.TagName)
 			tag := db.ClipboardTag{
 				Id:        uuid.NewString(),
 				ItemId:    op.ItemId,
 				TagName:   op.TagName,
 				CreatedAt: createdAt,
 			}
-			_ = db.AddClipboardTag(tag)
+			err := db.AddClipboardTag(tag)
+			if err != nil {
+				utils.LogUtil.Error("syncPush", "addTag失败:", err)
+			} else {
+				utils.LogUtil.Info("syncPush", "addTag成功: itemId:", op.ItemId)
+			}
 
 		case "removeTag":
+			utils.LogUtil.Info("syncPush", "处理removeTag: itemId:", op.ItemId, "tagName:", op.TagName)
 			_ = db.DeleteClipboardTag(op.ItemId, op.TagName)
 		}
 	}
