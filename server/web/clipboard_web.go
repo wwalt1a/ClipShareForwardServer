@@ -244,6 +244,17 @@ func uploadSyncImage(c *gin.Context) {
 		errorResult(c, http.StatusInternalServerError, err.Error(), nil)
 		return
 	}
+	// 创建带过期时间的记录，纳入定时清理
+	expireAt := time.Now().AddDate(0, 0, imageTTLDays)
+	item := db.ClipboardItem{
+		Id:        uuid.NewString(),
+		GroupId:   groupId,
+		Type:      "image",
+		FileId:    fileId,
+		CreatedAt: time.Now(),
+		ExpireAt:  &expireAt,
+	}
+	_ = db.AddClipboardItem(item)
 	successResult(c, gin.H{"fileId": fileId})
 }
 
