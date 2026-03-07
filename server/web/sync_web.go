@@ -273,6 +273,10 @@ func syncPush(c *gin.Context) {
 	_ = db.UpsertDeviceState(state)
 
 	// 通知同组其他在线设备立即拉取
+	utils.LogUtil.Info("syncPush", "NotifyGroupSync: groupId=", dto.GroupId, "excludeDevId=", dto.DevId, "BaseSocketsMap count=", len(forward.BaseSocketsMap))
+	for devId, conn := range forward.BaseSocketsMap {
+		utils.LogUtil.Info("syncPush", "BaseSocket devId=", devId, "groupId=", conn.GroupId)
+	}
 	forward.NotifyGroupSync(dto.GroupId, dto.DevId)
 
 	successResult(c, gin.H{"pushed": len(dto.Operations)})
