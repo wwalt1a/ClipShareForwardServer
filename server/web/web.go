@@ -55,21 +55,15 @@ func StartWebServer() {
 	authorized.POST("/planKeys/updateStatus", updatePlanKeyStatus)
 	authorized.GET("/planKeys/verify", verifyKey)
 
-	// 剪贴板云存储 API（无需管理员认证，用 groupId 作为命名空间）
-	clip := api.Group("/clip")
-	clip.POST("/push/text", pushClipText)
-	clip.POST("/push/image", pushClipImage)
-	clip.GET("/pull", pullClipItems)
-	clip.DELETE("/delete", deleteClipItems)
-	clip.GET("/image", getClipImage)
-
-	// 新的同步 API（细粒度操作日志同步）
+	// 同步 API
 	sync := api.Group("/sync")
 	sync.POST("/init", syncInit)
 	sync.POST("/push", syncPush)
 	sync.GET("/pull", syncPull)
 	sync.POST("/device-state", updateDeviceState)
-	utils.LogUtil.Info("StartWebServer", "已注册同步API路由: /api/sync/init, /api/sync/push, /api/sync/pull, /api/sync/device-state")
+	sync.POST("/image", uploadSyncImage)
+	sync.GET("/image", getSyncImage)
+	utils.LogUtil.Info("StartWebServer", "已注册同步API路由: /api/sync/*")
 
 	// Start web forwardServer
 	_ = r.Run(fmt.Sprintf(":%d", *types.AppConfig.Web.Port))

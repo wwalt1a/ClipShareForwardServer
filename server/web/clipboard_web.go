@@ -214,3 +214,52 @@ func cleanExpiredImages() {
 		utils.LogUtil.Info("cleanExpiredImages: deleted", cnt, "expired image items")
 	}
 }
+
+// uploadSyncImage 上传图片文件用于同步（只存文件，返回 fileId，不创建剪贴板条目）
+// 由 /api/sync/push 的 addItem 操作引用此 fileId
+func uploadSyncImage(c *gin.Context) {
+	groupId := c.PostForm("groupId")
+	if groupId == "" {
+		errorResult(c, http.StatusBadRequest, "groupId required", nil)
+		return
+	}
+	file, err := c.FormFile("data")
+	if err != nil {
+		errorResult(c, http.StatusBadRequest, "missing file data", nil)
+		return
+	}
+	src, err := file.Open()
+	if err != nil {
+		errorResult(c, http.StatusInternalServerError, err.Error(), nil)
+		return
+	}
+	defer src.Close()
+	buf := make([]byte, file.Size)
+	if _, err = src.Read(buf); err != nil {
+		errorResult(c, http.StatusInternalServerError, err.Error(), nil)
+		return
+	}
+	fileId := uuid.NewString()
+	if err = storage.SaveImage(fileId, buf); err != nil {
+		errorResult(c, http.StatusInternalServerError, err.Error(), nil)
+		return
+	}
+	successResult(c, gin.H{"fileId": fileId})
+}
+
+// getSyncImage 下载同步图片文件
+// Query: groupId, fileId
+func getSyncImage(c *gin.Context) {
+	groupId := c.Query("groupId")
+	fileId := c.Query("fileId")
+	if groupId == "" || fileId == "" {
+		errorResult(c, http.StatusBadRequest, "groupId and fileId required", nil)
+		return
+	}
+	data, err := storage.ReadImage(fileId)
+	if err != nil {
+		errorResult(c, http.StatusNotFound, "file not found", nil)
+		return
+	}
+	c.Data(http.StatusOK, "application/octet-stream", data)
+}
