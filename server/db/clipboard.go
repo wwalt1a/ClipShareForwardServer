@@ -82,6 +82,16 @@ func DeleteClipboardItems(groupId string, ids []string) error {
 		Delete(&ClipboardItem{}).Error
 }
 
+func GetClipboardItemById(groupId string, id string) (*ClipboardItem, error) {
+	checkDb()
+	var item ClipboardItem
+	err := AppDb.Where("group_id = ? AND id = ?", groupId, id).First(&item).Error
+	if err != nil {
+		return nil, err
+	}
+	return &item, nil
+}
+
 func DeleteExpiredImages() (int64, error) {
 	checkDb()
 	result := AppDb.Where("type = 'image' AND expire_at IS NOT NULL AND expire_at <= ?", time.Now()).

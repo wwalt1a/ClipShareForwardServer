@@ -3,6 +3,7 @@ package web
 import (
 	"clipshare/db"
 	"clipshare/forward"
+	"clipshare/storage"
 	"clipshare/utils"
 	"net/http"
 	"strconv"
@@ -232,6 +233,12 @@ func syncPush(c *gin.Context) {
 
 		case "deleteItem":
 			utils.LogUtil.Info("syncPush", "处理deleteItem: itemId:", op.ItemId)
+			// 若是图片类型，先删除文件
+			if item, err := db.GetClipboardItemById(dto.GroupId, op.ItemId); err == nil && item != nil {
+				if item.Type == "image" && item.FileId != "" {
+					_ = storage.DeleteImage(item.FileId)
+				}
+			}
 			// 删除关联的标签
 			_ = db.DeleteClipboardTagsByItemId(op.ItemId)
 			// 删除记录
