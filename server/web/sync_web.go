@@ -201,7 +201,7 @@ func syncPush(c *gin.Context) {
 			FileId:    op.FileId,
 			ItemType:  op.ItemType,
 			TagName:   op.TagName,
-			CreatedAt: createdAt,
+			CreatedAt: time.Now(),
 			ExpireAt:  &expireAt,
 		}
 		logs = append(logs, log)
